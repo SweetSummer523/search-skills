@@ -9,7 +9,7 @@ Goal: expose a stable, workflow-friendly interface similar to MinerU MCP's `pars
 - Return a JSON result contract on stdout.
 
 Notes
-- This is NOT an MCP server. It's a script meant to be called by OpenClaw skills via exec.
+- This is NOT an MCP server. It's a script meant to be called by agent skills via exec.
 - Secrets loaded from .env (skill root) or environment.
 
 Env
@@ -34,14 +34,14 @@ import urllib.request
 import zipfile
 
 
-def _default_workspace() -> pathlib.Path:
-    """Return workspace root, preferring env override."""
-    if v := os.environ.get("OPENCLAW_WORKSPACE"):
-        return pathlib.Path(v)
-    return pathlib.Path.home() / ".openclaw" / "workspace"
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from shared.runtime_paths import default_workspace
 
 
-WORKSPACE = _default_workspace()
+WORKSPACE = default_workspace()
 CACHE_ROOT = WORKSPACE / "mineru-cache"
 
 
@@ -67,7 +67,7 @@ def _bootstrap_env() -> None:
 
 def _http_json(method: str, url: str, *, headers: dict[str, str] | None = None, payload: dict | None = None, timeout: int = 60) -> dict:
     data = None
-    hdrs = {"Accept": "application/json", "User-Agent": "openclaw-mineru"}
+    hdrs = {"Accept": "application/json", "User-Agent": "search-skills-mineru"}
     if headers:
         hdrs.update(headers)
     if payload is not None:
@@ -91,7 +91,7 @@ def _http_json(method: str, url: str, *, headers: dict[str, str] | None = None, 
 
 
 def _http_bytes(url: str, *, headers: dict[str, str] | None = None, timeout: int = 180) -> bytes:
-    hdrs = {"User-Agent": "openclaw-mineru"}
+    hdrs = {"User-Agent": "search-skills-mineru"}
     if headers:
         hdrs.update(headers)
     req = urllib.request.Request(url=url, method="GET", headers=hdrs)

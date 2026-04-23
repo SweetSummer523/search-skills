@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""content-extract: deterministic MinerU-only extractor for OpenClaw.
+"""content-extract: deterministic MinerU fallback extractor for agent workflows.
 
 Why this exists:
-- OpenClaw's `web_fetch` is a tool, not available inside scripts.
+- A runtime's built-in fetch tool is not available inside this script.
 - This script provides a stable "fallback engine" that the agent can call
-  after probing with `web_fetch`.
+  after probing with its native fetch/browser capability.
 
 It wraps mineru-extract's MCP-aligned script and returns a compact JSON contract.
 
@@ -26,6 +26,13 @@ import subprocess
 import sys
 
 
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from shared.runtime_paths import find_skill_script
+
+
 def _error_output(source_url: str, notes: list[str]) -> dict:
     return {
         "ok": False,
@@ -44,20 +51,17 @@ def _find_mineru_wrapper() -> str:
     if v := os.environ.get("MINERU_WRAPPER_PATH"):
         return v
 
-    here = pathlib.Path(__file__).resolve().parent
-    # 2. Monorepo sibling: ../mineru-extract/scripts/mineru_parse_documents.py
-    candidate = here.parent.parent / "mineru-extract" / "scripts" / "mineru_parse_documents.py"
-    if candidate.exists():
+    candidate = find_skill_script(
+        __file__,
+        skill_name="mineru-extract",
+        relative_path="scripts/mineru_parse_documents.py",
+    )
+    if candidate is not None:
         return str(candidate)
-
-    # 3. OpenClaw workspace default
-    default = pathlib.Path.home() / ".openclaw" / "workspace" / "skills" / "mineru-extract" / "scripts" / "mineru_parse_documents.py"
-    if default.exists():
-        return str(default)
 
     raise FileNotFoundError(
         "Cannot find mineru_parse_documents.py. "
-        "Set MINERU_WRAPPER_PATH env or install mineru-extract skill as a sibling directory."
+        "Set MINERU_WRAPPER_PATH or SEARCH_SKILLS_ROOT, or install mineru-extract as a sibling skill."
     )
 
 

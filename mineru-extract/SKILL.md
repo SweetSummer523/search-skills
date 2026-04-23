@@ -64,7 +64,13 @@ python3 mineru-extract/scripts/mineru_extract.py "<URL>" --model MinerU-HTML --p
 
 The script always downloads + extracts the MinerU result zip to:
 
-`~/.openclaw/workspace/mineru/<task_id>/`
+`$SEARCH_SKILLS_WORKSPACE/mineru/<task_id>/`
+
+If `SEARCH_SKILLS_WORKSPACE` is unset, it falls back to:
+
+1. `AGENT_WORKSPACE`
+2. `OPENCLAW_WORKSPACE` (legacy compatibility)
+3. `~/.agent-skills/workspace`
 
 It writes:
 - `result.zip`
