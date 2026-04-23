@@ -26,21 +26,29 @@ from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from shared.runtime_paths import find_search_credentials
+
+
 # ---------------------------------------------------------------------------
 # Credentials loader (reuse search-layer pattern)
 # ---------------------------------------------------------------------------
 def _load_creds() -> dict:
     keys = {}
-    cred_path = Path.home() / ".openclaw" / "credentials" / "search.json"
-    try:
-        cred = json.loads(cred_path.read_text())
-        if grok := cred.get("grok"):
-            if isinstance(grok, dict):
-                keys["grok_url"] = grok.get("apiUrl", "")
-                keys["grok_key"] = grok.get("apiKey", "")
-                keys["grok_model"] = grok.get("model", "grok-4.1-fast")
-    except (json.JSONDecodeError, FileNotFoundError):
-        pass
+    cred_path = find_search_credentials(__file__)
+    if cred_path is not None:
+        try:
+            cred = json.loads(cred_path.read_text(encoding="utf-8"))
+            if grok := cred.get("grok"):
+                if isinstance(grok, dict):
+                    keys["grok_url"] = grok.get("apiUrl", "")
+                    keys["grok_key"] = grok.get("apiKey", "")
+                    keys["grok_model"] = grok.get("model", "grok-4.1-fast")
+        except (json.JSONDecodeError, FileNotFoundError):
+            pass
     # Env var overrides
     for env, key in [("GROK_API_KEY", "grok_key"), ("GROK_API_URL", "grok_url"),
                      ("GROK_MODEL", "grok_model")]:

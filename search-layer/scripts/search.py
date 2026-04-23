@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 Multi-source search v2.2: Exa + Tavily + Grok with intent-aware scoring and ranking.
-Brave is handled by the agent via built-in web_search (cannot be called from script).
+Broad web search is handled by the agent runtime when available and cannot be
+called from this script directly.
 
 Sources:
   Exa    - semantic search, good for technical/academic content
@@ -34,6 +35,13 @@ from urllib.parse import urlparse, urlencode, parse_qs, urlunparse
 from pathlib import Path
 import threading
 import importlib.util
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from shared.runtime_paths import find_search_credentials
 
 # Global concurrency limiter: cap total HTTP threads across nested pools.
 # Multi-query deep mode spawns outer_workers × 3 inner threads; this semaphore
@@ -270,14 +278,8 @@ def score_result(result: dict, query: str, intent: str, boost_domains: set) -> f
 # ---------------------------------------------------------------------------
 def _find_credentials() -> str | None:
     """Find search.json credentials file."""
-    candidates = [
-        os.path.expanduser("~/.openclaw/credentials/search.json"),
-        os.path.join(os.getcwd(), "credentials/search.json"),
-    ]
-    for c in candidates:
-        if os.path.isfile(c):
-            return c
-    return None
+    path = find_search_credentials(__file__)
+    return str(path) if path is not None else None
 
 
 def get_keys():

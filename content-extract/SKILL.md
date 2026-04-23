@@ -1,11 +1,11 @@
 ---
 name: content-extract
-description: Robust URL-to-Markdown extraction for OpenClaw workflows. Use when the user wants to "extract/summarize/convert a webpage to markdown" (especially WeChat mp.weixin.qq.com) and web_fetch/browser is blocked or messy. Uses a cheap probe via web_fetch first, then falls back to the official MinerU API (via the local mineru-extract skill) and returns a traceable result contract with source links.
+description: Robust URL-to-Markdown extraction for agent workflows. Use when the user wants to "extract/summarize/convert a webpage to markdown" (especially WeChat mp.weixin.qq.com) and the runtime's fetch/browser path is blocked or messy. Uses a cheap probe via the native fetch capability first, then falls back to the official MinerU API (via the local mineru-extract skill) and returns a traceable result contract with source links.
 ---
 
 # content-extract — 上层内容解析入口（MCP 语义对齐，但不跑 MCP Server）
 
-目标：把“给我一个 URL → 产出可读 Markdown + 可追溯入口”变成一个**统一入口**，供后续所有业务 skill（github-explorer、写作类 skills、日报等）复用。
+目标：把“给我一个 URL → 产出可读 Markdown + 可追溯入口”变成一个**统一入口**，供后续所有业务 skill（代码调研、写作、日报、知识归档等）复用。
 
 核心原则（来自你发的 Excel Skill 拆解文章的启发）：
 
@@ -22,7 +22,7 @@ description: Robust URL-to-Markdown extraction for OpenClaw workflows. Use when 
 - 白名单文件：`references/domain-whitelist.md`
 - 对命中白名单的 URL：强制 `model_version=MinerU-HTML`
 
-1) **Probe（低成本）**：优先用 `web_fetch(url)`
+1) **Probe（低成本）**：优先用 runtime 原生 `fetch` / `web` / `browser` 能力拿正文
 
 - 目标：拿到正文 markdown（便宜、快）
 - 判断“失败/不合格”条件（见 `references/heuristics.md`）包括：
@@ -32,7 +32,7 @@ description: Robust URL-to-Markdown extraction for OpenClaw workflows. Use when 
 
 2) **Fallback（高保真）**：走 MinerU 官方 API
 
-- 调用下游 driver：`skills/mineru-extract/scripts/mineru_parse_documents.py`
+- 调用下游 driver：`mineru-extract/scripts/mineru_parse_documents.py`
 - 对 HTML 页面（微信等）：强制 `model_version=MinerU-HTML`
 
 3) **输出统一结果合同（Result Contract）**
@@ -72,7 +72,7 @@ python3 mineru-extract/scripts/mineru_parse_documents.py \
   --emit-markdown --max-chars 20000
 ```
 
-> **路径说明**: 上述命令假设你在 skills 安装根目录下执行。如果 mineru-extract 安装在其他位置，请替换为实际路径。
+> **路径说明**: 上述命令假设你在本仓库根目录或 skill 根目录下执行。如果 `mineru-extract` 安装在其他位置，请替换为实际路径，或设置 `SEARCH_SKILLS_ROOT` / `MINERU_WRAPPER_PATH`。
 
 ## 交付规范（强制）
 

@@ -4,7 +4,7 @@
 Primary use: submit a URL (including HTML pages) to MinerU, poll until done,
 download the result zip, and extract Markdown.
 
-Designed to be called from OpenClaw skills via `exec`.
+Designed to be called from agent skills via `exec`.
 
 Env (load order):
 - process env
@@ -16,7 +16,8 @@ Required:
 
 Optional:
 - MINERU_API_BASE (default: https://mineru.net)
-- OPENCLAW_WORKSPACE: workspace root for output (default: ~/.openclaw/workspace)
+- SEARCH_SKILLS_WORKSPACE / AGENT_WORKSPACE / OPENCLAW_WORKSPACE:
+  workspace root for output
 """
 
 from __future__ import annotations
@@ -32,6 +33,13 @@ import time
 import urllib.error
 import urllib.request
 import zipfile
+
+
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from shared.runtime_paths import default_workspace
 
 
 def _load_dotenv(path: pathlib.Path) -> None:
@@ -52,12 +60,6 @@ def _bootstrap_env() -> None:
     here = pathlib.Path(__file__).resolve()
     _load_dotenv(here.parent / ".env")
     _load_dotenv(here.parent.parent / ".env")
-
-
-def _default_workspace() -> pathlib.Path:
-    if v := os.environ.get("OPENCLAW_WORKSPACE"):
-        return pathlib.Path(v)
-    return pathlib.Path.home() / ".openclaw" / "workspace"
 
 
 def _http_json(method: str, url: str, *, headers: dict[str, str] | None = None, payload: dict | None = None, timeout: int = 60) -> dict:
@@ -252,7 +254,7 @@ def main() -> int:
 
     zip_bytes = _http_bytes(full_zip_url, timeout=180)
 
-    workspace = _default_workspace()
+    workspace = default_workspace()
     base_out = pathlib.Path(args.out) if args.out else (workspace / "mineru" / sanitize_filename(task_id))
     base_out.mkdir(parents=True, exist_ok=True)
     zip_path = base_out / "result.zip"
