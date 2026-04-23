@@ -1,7 +1,3 @@
-![Agent Search Skills Banner](./images/openclaw-search-skills-banner.png)
-
-<div align="center">
-
 # Agent Search Skills
 
 [English](./docs/README_EN.md) | 简体中文
@@ -16,7 +12,7 @@
 
 </div>
 
-> 这个仓库最初为 OpenClaw 设计；现在已改造成更通用的 agent skill 包，保留旧路径兼容，但文档和默认约定不再绑定单一运行时。
+> 原仓库（[openclaw-search-skills](https://github.com/blessonism/openclaw-search-skills)）最初为 OpenClaw 设计；现在已改造成更通用的 agent skill 包，保留旧路径兼容，但文档和默认约定不再绑定单一运行时。
 
 ## 概述
 
@@ -56,26 +52,23 @@
 - OpenCode
 - 任何支持读取 `SKILL.md`、执行 shell、可选浏览网页的 Agent runtime
 
-如果某个 runtime 的“skills”机制只是提示词注入，也可以直接复用这些 `SKILL.md`，再按本地工具名映射 `search/fetch/browser` 能力即可。
+如果某个 Agent 的“skills”机制只是提示词注入，也可以直接复用这些 `SKILL.md`，再按本地工具名映射 `search/fetch/browser` 能力即可。
 
 ## 安装
+
+### 告诉Agent
+</div>
+
+> 帮我安装这个Skill：https://github.com/SweetSummer523/search-skills
 
 ### 通用安装
 
 ```bash
-git clone https://github.com/blessonism/openclaw-search-skills.git
-cd openclaw-search-skills
-```
-
-然后按你的 Agent runtime 习惯二选一：
-
-1. 直接把某个 skill 目录软链/复制到 runtime 的 skills 或 prompts 目录。
-2. 保持仓库原样，运行时通过仓库内绝对路径读取 `SKILL.md` 并执行脚本。
-
-推荐设置一个通用根目录环境变量，避免不同 runtime 的目录结构差异：
-
-```bash
-export SEARCH_SKILLS_ROOT="$PWD"
+git clone https://github.com/SweetSummer523/search-skills.git
+# 链接或者复制到Agent的skills目录（以Claude Code为例，将<search-skills path>替换为上一条指令clone的路径）
+ln -s <search-skills path>/search-layer ~/.claude/skiils/search-layer
+ln -s <search-skills path>/content-extract ~/.claude/skiils/content-extract
+ln -s <search-skills path>/mineru-extract ~/.claude/skiils/mineru-extract
 ```
 
 ## 配置
@@ -84,13 +77,14 @@ export SEARCH_SKILLS_ROOT="$PWD"
 
 `search-layer` 会按下面的优先级找配置：
 
-1. `SEARCH_SKILLS_CREDENTIALS`
-2. `AGENT_CREDENTIALS_PATH`
-3. `./credentials/search.json`
-4. `~/.agent-skills/credentials/search.json`
-5. 旧版兼容：`~/.openclaw/credentials/search.json`
+1. 仓库内置示例文件：`search-layer/search.json`
+2. `SEARCH_SKILLS_CREDENTIALS`
+3. `AGENT_CREDENTIALS_PATH`
+4. `./credentials/search.json`
+5. `~/.agent-skills/credentials/search.json`
+6. 旧版兼容：`~/.openclaw/credentials/search.json`
 
-示例：
+推荐直接编辑仓库里的 `search-layer/search.json`：
 
 ```json
 {
@@ -103,6 +97,8 @@ export SEARCH_SKILLS_ROOT="$PWD"
   }
 }
 ```
+
+如果 `search-layer/search.json` 里仍然是 `your-exa-key` 这类占位值，加载器会自动忽略，不会把它当成真实凭据。
 
 也支持环境变量覆盖：
 
