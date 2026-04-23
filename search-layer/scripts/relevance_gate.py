@@ -30,7 +30,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from shared.runtime_paths import find_search_credentials
+from shared.runtime_paths import find_search_credentials, is_configured_value
 
 
 # ---------------------------------------------------------------------------
@@ -44,9 +44,12 @@ def _load_creds() -> dict:
             cred = json.loads(cred_path.read_text(encoding="utf-8"))
             if grok := cred.get("grok"):
                 if isinstance(grok, dict):
-                    keys["grok_url"] = grok.get("apiUrl", "")
-                    keys["grok_key"] = grok.get("apiKey", "")
-                    keys["grok_model"] = grok.get("model", "grok-4.1-fast")
+                    if is_configured_value(grok.get("apiUrl")):
+                        keys["grok_url"] = grok.get("apiUrl", "")
+                    if is_configured_value(grok.get("apiKey")):
+                        keys["grok_key"] = grok.get("apiKey", "")
+                    if is_configured_value(grok.get("model")):
+                        keys["grok_model"] = grok.get("model", "grok-4.1-fast")
         except (json.JSONDecodeError, FileNotFoundError):
             pass
     # Env var overrides

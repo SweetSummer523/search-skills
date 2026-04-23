@@ -84,13 +84,14 @@ export SEARCH_SKILLS_ROOT="$PWD"
 
 `search-layer` 会按下面的优先级找配置：
 
-1. `SEARCH_SKILLS_CREDENTIALS`
-2. `AGENT_CREDENTIALS_PATH`
-3. `./credentials/search.json`
-4. `~/.agent-skills/credentials/search.json`
-5. 旧版兼容：`~/.openclaw/credentials/search.json`
+1. 仓库内置示例文件：`search-layer/search.json`
+2. `SEARCH_SKILLS_CREDENTIALS`
+3. `AGENT_CREDENTIALS_PATH`
+4. `./credentials/search.json`
+5. `~/.agent-skills/credentials/search.json`
+6. 旧版兼容：`~/.openclaw/credentials/search.json`
 
-示例：
+推荐直接编辑仓库里的 `search-layer/search.json`：
 
 ```json
 {
@@ -103,6 +104,8 @@ export SEARCH_SKILLS_ROOT="$PWD"
   }
 }
 ```
+
+如果 `search-layer/search.json` 里仍然是 `your-exa-key` 这类占位值，加载器会自动忽略，不会把它当成真实凭据。
 
 也支持环境变量覆盖：
 

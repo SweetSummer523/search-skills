@@ -84,13 +84,14 @@ export SEARCH_SKILLS_ROOT="$PWD"
 
 `search-layer` looks for credentials in this order:
 
-1. `SEARCH_SKILLS_CREDENTIALS`
-2. `AGENT_CREDENTIALS_PATH`
-3. `./credentials/search.json`
-4. `~/.agent-skills/credentials/search.json`
-5. legacy fallback: `~/.openclaw/credentials/search.json`
+1. bundled repo example: `search-layer/search.json`
+2. `SEARCH_SKILLS_CREDENTIALS`
+3. `AGENT_CREDENTIALS_PATH`
+4. `./credentials/search.json`
+5. `~/.agent-skills/credentials/search.json`
+6. legacy fallback: `~/.openclaw/credentials/search.json`
 
-Example:
+Recommended: edit `search-layer/search.json` directly:
 
 ```json
 {
@@ -103,6 +104,8 @@ Example:
   }
 }
 ```
+
+If `search-layer/search.json` still contains placeholder values such as `your-exa-key`, the loader ignores them instead of treating them as real credentials.
 
 Environment variables override file values:
 

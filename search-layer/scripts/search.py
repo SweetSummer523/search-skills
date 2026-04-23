@@ -41,7 +41,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from shared.runtime_paths import find_search_credentials
+from shared.runtime_paths import find_search_credentials, is_configured_value
 
 # Global concurrency limiter: cap total HTTP threads across nested pools.
 # Multi-query deep mode spawns outer_workers × 3 inner threads; this semaphore
@@ -294,27 +294,34 @@ def get_keys():
             # Exa
             exa = cred.get("exa")
             if isinstance(exa, dict):
-                if v := exa.get("apiKey"):
+                if is_configured_value(exa.get("apiKey")):
+                    v = exa.get("apiKey")
                     keys["exa"] = v
-                if v := (exa.get("apiUrl") or exa.get("baseUrl") or exa.get("apiBase")):
+                if is_configured_value(exa.get("apiUrl") or exa.get("baseUrl") or exa.get("apiBase")):
+                    v = exa.get("apiUrl") or exa.get("baseUrl") or exa.get("apiBase")
                     keys["exa_url"] = v
-            elif isinstance(exa, str) and exa:
+            elif isinstance(exa, str) and is_configured_value(exa):
                 keys["exa"] = exa
 
             # Optional: explicit Exa base/url fields
-            if v := (cred.get("exaApiUrl") or cred.get("exaApiBase") or cred.get("exaBaseUrl")):
+            if is_configured_value(cred.get("exaApiUrl") or cred.get("exaApiBase") or cred.get("exaBaseUrl")):
+                v = cred.get("exaApiUrl") or cred.get("exaApiBase") or cred.get("exaBaseUrl")
                 keys["exa_url"] = v
 
             # Tavily
-            if v := cred.get("tavily"):
+            if is_configured_value(cred.get("tavily")):
+                v = cred.get("tavily")
                 keys["tavily"] = v
 
             # Grok
             if grok := cred.get("grok"):
                 if isinstance(grok, dict):
-                    keys["grok_url"] = grok.get("apiUrl", "")
-                    keys["grok_key"] = grok.get("apiKey", "")
-                    keys["grok_model"] = grok.get("model", "grok-4.1-fast")
+                    if is_configured_value(grok.get("apiUrl")):
+                        keys["grok_url"] = grok.get("apiUrl", "")
+                    if is_configured_value(grok.get("apiKey")):
+                        keys["grok_key"] = grok.get("apiKey", "")
+                    if is_configured_value(grok.get("model")):
+                        keys["grok_model"] = grok.get("model", "grok-4.1-fast")
         except (json.JSONDecodeError, FileNotFoundError):
             pass
 
