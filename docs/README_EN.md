@@ -1,7 +1,3 @@
-![Agent Search Skills Banner](../images/openclaw-search-skills-banner.png)
-
-<div align="center">
-
 # Agent Search Skills
 
 English | [简体中文](../README.md)
@@ -16,7 +12,7 @@ English | [简体中文](../README.md)
 
 </div>
 
-> This repo started as an OpenClaw-focused package. It now targets generic agent runtimes, while keeping the legacy `~/.openclaw/...` paths as compatibility fallbacks.
+> The original repo([openclaw-search-skills](https://github.com/blessonism/openclaw-search-skills)) started as an OpenClaw-focused package. It now targets generic agent runtimes, while keeping the legacy `~/.openclaw/...` paths as compatibility fallbacks.
 
 ## Overview
 
@@ -60,22 +56,19 @@ If your runtime treats "skills" as prompt files rather than a formal package typ
 
 ## Installation
 
+### Tell the Agent
+</div>
+
+> Install this skill for me: https://github.com/SweetSummer523/search-skills
+
 ### Generic install
 
 ```bash
-git clone https://github.com/blessonism/openclaw-search-skills.git
-cd openclaw-search-skills
-```
-
-Then choose either approach:
-
-1. Symlink or copy individual skill directories into your runtime's skills or prompts directory.
-2. Keep the repo as-is and point your runtime to the `SKILL.md` files directly.
-
-Recommended environment variable:
-
-```bash
-export SEARCH_SKILLS_ROOT="$PWD"
+git clone https://github.com/SweetSummer523/search-skills.git
+# Symlink or copy individual skill directories into your Agent's skills directory（Take Claude Code as an example，replace <search-skills path> with your search-skills path）
+ln -s <search-skills path>/search-layer ~/.claude/skiils/search-layer
+ln -s <search-skills path>/content-extract ~/.claude/skiils/content-extract
+ln -s <search-skills path>/mineru-extract ~/.claude/skiils/mineru-extract
 ```
 
 ## Configuration
@@ -84,13 +77,14 @@ export SEARCH_SKILLS_ROOT="$PWD"
 
 `search-layer` looks for credentials in this order:
 
-1. `SEARCH_SKILLS_CREDENTIALS`
-2. `AGENT_CREDENTIALS_PATH`
-3. `./credentials/search.json`
-4. `~/.agent-skills/credentials/search.json`
-5. legacy fallback: `~/.openclaw/credentials/search.json`
+1. bundled repo example: `search-layer/search.json`
+2. `SEARCH_SKILLS_CREDENTIALS`
+3. `AGENT_CREDENTIALS_PATH`
+4. `./credentials/search.json`
+5. `~/.agent-skills/credentials/search.json`
+6. legacy fallback: `~/.openclaw/credentials/search.json`
 
-Example:
+Recommended: edit `search-layer/search.json` directly:
 
 ```json
 {
@@ -103,6 +97,8 @@ Example:
   }
 }
 ```
+
+If `search-layer/search.json` still contains placeholder values such as `your-exa-key`, the loader ignores them instead of treating them as real credentials.
 
 Environment variables override file values:
 
