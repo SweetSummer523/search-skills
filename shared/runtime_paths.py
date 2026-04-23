@@ -4,6 +4,19 @@ import os
 from pathlib import Path
 
 
+_PLACEHOLDER_MARKERS = (
+    "your-",
+    "replace-",
+    "replace_",
+    "example",
+    "placeholder",
+    "changeme",
+    "change-me",
+    "change_me",
+    "<",
+)
+
+
 def repo_root_from(script_file: str | Path) -> Path:
     path = Path(script_file).resolve()
     return path.parents[2]
@@ -45,6 +58,10 @@ def default_workspace() -> Path:
 def search_credentials_candidates(script_file: str | Path | None = None) -> list[Path]:
     candidates: list[Path] = []
 
+    if script_file is not None:
+        repo_root = repo_root_from(script_file)
+        candidates.append(repo_root / "search-layer" / "search.json")
+
     for env_name in ("SEARCH_SKILLS_CREDENTIALS", "AGENT_CREDENTIALS_PATH"):
         if path := _expand_env_path(env_name):
             candidates.append(path)
@@ -53,7 +70,6 @@ def search_credentials_candidates(script_file: str | Path | None = None) -> list
     candidates.append(cwd / "credentials" / "search.json")
 
     if script_file is not None:
-        repo_root = repo_root_from(script_file)
         candidates.append(repo_root / "credentials" / "search.json")
 
     home = Path.home()
@@ -69,6 +85,20 @@ def search_credentials_candidates(script_file: str | Path | None = None) -> list
 
 def find_search_credentials(script_file: str | Path | None = None) -> Path | None:
     return _first_existing(search_credentials_candidates(script_file))
+
+
+def is_configured_value(value: str | None) -> bool:
+    if value is None:
+        return False
+    text = value.strip()
+    if not text:
+        return False
+
+    lowered = text.lower()
+    if lowered in {"null", "none", "unset", "todo", "tbd"}:
+        return False
+
+    return not any(marker in lowered for marker in _PLACEHOLDER_MARKERS)
 
 
 def find_skill_script(
