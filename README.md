@@ -66,9 +66,9 @@
 ```bash
 git clone https://github.com/SweetSummer523/search-skills.git
 # 链接或者复制到Agent的skills目录（以Claude Code为例，将<search-skills path>替换为上一条指令clone的路径）
-ln -s <search-skills path>/search-layer ~/.claude/skiils/search-layer
-ln -s <search-skills path>/content-extract ~/.claude/skiils/content-extract
-ln -s <search-skills path>/mineru-extract ~/.claude/skiils/mineru-extract
+ln -s <search-skills path>/search-layer ~/.claude/skills/search-layer
+ln -s <search-skills path>/content-extract ~/.claude/skills/content-extract
+ln -s <search-skills path>/mineru-extract ~/.claude/skills/mineru-extract
 ```
 
 ## 配置
@@ -183,6 +183,74 @@ python3 mineru-extract/scripts/mineru_parse_documents.py \
 - 保留对旧版 `~/.openclaw/...` 凭据与 workspace 路径的兼容。
 - 仓库名暂未变更，避免打断现有引用和安装链接。
 - README、`SKILL.md` 和脚本默认值已经改成 Agent 通用表述。
+
+## 给 AI Agent 读的安装协议
+
+当用户说：
+
+> 帮我安装这个skill：https://github.com/SweetSummer523/search-skills
+
+请按下面规则执行，不要自行猜测“仓库根目录就是一个 skill”：
+
+1. 这个仓库包含 **3 个独立 skill**，必须分别安装：
+   - `search-layer`
+   - `content-extract`
+   - `mineru-extract`
+2. **不要**把仓库根目录 `search-skills/` 当成单个 skill 安装，因为仓库根目录本身不是一个可安装 skill，真正的 skill 目录是上面三个子目录；每个子目录里都带有自己的 `SKILL.md`。
+3. 安装时必须保留每个 skill 目录内的全部 supporting files，而不是只复制 `SKILL.md`。
+4. 如果 runtime 支持 symbolic link，优先用 link；否则复制目录也可以。
+
+### Claude Code 安装规则
+
+把这 3 个目录安装到：
+
+- `~/.claude/skills/search-layer`
+- `~/.claude/skills/content-extract`
+- `~/.claude/skills/mineru-extract`
+
+示例：
+
+```bash
+git clone https://github.com/SweetSummer523/search-skills.git
+ln -s <search-skills path>/search-layer ~/.claude/skills/search-layer
+ln -s <search-skills path>/content-extract ~/.claude/skills/content-extract
+ln -s <search-skills path>/mineru-extract ~/.claude/skills/mineru-extract
+```
+
+### Codex 安装规则
+
+把这 3 个目录安装到：
+
+- `~/.codex/skills/search-layer`
+- `~/.codex/skills/content-extract`
+- `~/.codex/skills/mineru-extract`
+
+如果你使用 Codex 的 GitHub skill installer，必须传入子目录路径，而不是只传仓库根 URL。等价目标如下：
+
+- `search-layer`
+- `content-extract`
+- `mineru-extract`
+
+### 安装完成后必须提醒用户配置
+
+安装完成后，请明确提醒用户检查或编辑下面这些路径：
+
+- 搜索凭据文件：`<search-skills path>/search-layer/search.json`
+- 可选环境变量：`EXA_API_KEY`、`TAVILY_API_KEY`、`GROK_API_URL`、`GROK_API_KEY`、`GROK_MODEL`
+- MinerU token 文件：`<search-skills path>/mineru-extract/.env`
+- Workspace 环境变量：`SEARCH_SKILLS_WORKSPACE`
+
+如果你无法确定 `<search-skills path>`，就告诉用户实际安装到了哪个本地目录，并基于那个真实路径给出配置文件位置。
+
+### 安装完成后的最小回复要求
+
+完成安装后，请向用户报告：
+
+1. 实际安装了哪 3 个 skill
+2. 每个 skill 的本地安装路径
+3. 搜索配置文件路径
+4. MinerU 配置文件路径
+5. 如果 runtime 需要重启才能加载新 skill，提醒用户重启
 
 ## License
 
